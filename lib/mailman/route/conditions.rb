@@ -55,6 +55,22 @@ module Mailman
       end
     end
 
-
+    class HeaderCondition < Condition
+      # @param [String, Regexp] the raw matcher to use in the condition,
+      #   converted to a matcher instance by {Matcher.create}
+      def initialize(header_condition)
+        @header, condition = header_condition.split('=',2)
+        super condition
+      end
+      
+      def match(message)
+        if !message.header[@header].nil?
+          if result = @matcher.match(message.header[@header].value)
+            return result
+          end
+        end
+        nil
+      end
+    end
   end
 end
