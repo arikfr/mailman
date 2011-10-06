@@ -63,6 +63,31 @@ module Mailman
       end
     end
 
+    # Matches against any header. Syntax: header-name=pattern
+    class HeaderCondition < Condition
+      # @param [String, Regexp] the raw matcher to use in the condition,
+      #   converted to a matcher instance by {Matcher.create}
+      def initialize(header_condition)
+        @header, condition = header_condition.split('=',2)
+        super condition
+      end
+
+      def match(message)
+        if !(header = message.header[@header]).nil?
+          values = if header.is_a?(Array)
+                     header.map { |h| h.value }
+                   else
+                     [header.value]
+                   end
+          values.each do |value|
+            if result = @matcher.match(value)
+              return result
+            end
+          end
+        end
+        nil
+      end
+    end
 
   end
 end
